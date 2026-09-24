@@ -2,7 +2,7 @@
 name = "jntuh-results-backend"
 version = "1.0.0"
 description = "JNTUH Academic Results Backend and Web Interface"
-requires-python = ">=3.9"
+requires-python = "==3.10.11"
 
 [tool.vercel]
 entrypoint = "results.main:app"
