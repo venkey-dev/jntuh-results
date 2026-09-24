@@ -4,6 +4,7 @@ import aiohttp
 import time
 import json
 from bs4 import BeautifulSoup
+from bs4.element import ResultSet
 # from jntuh.Executables import jntuhresultscraper
 
 # Define a class for scraping JNTUH results
@@ -17,14 +18,14 @@ class ResultScraper:
         
         # Exam codes for different semesters
         self.exam_codes = {
-            "1-1": ["1323", "1358", "1404", "1430", "1467", "1504", "1572", "1615"],
-            "1-2": ["1356", "1363", "1381", "1435", "1448", "1481", "1503", "1570", "1620", "1622"],
-            "2-1": ["1391", "1425", "1449", "1496", "1560", "1610", "1628"],
-            "2-2": ["1437", "1447", "1476", "1501", "1565", "1605", "1627"],
-            "3-1": ["1454", "1491", "1550", "1590", "1626", "1639", "1645", "1655"],
-            "3-2": ["1502", "1555", "1595", "1625", "1638", "1649", "1654"],
-            "4-1": ["1545", "1585", "1624", "1640", "1644", "1653"],
-            "4-2": ["1580", "1600", "1623"],
+            "1-1": ["1959", "1936", "1852", "1804", "1764", "1732", "1700", "1658", "1615", "1572", "1504", "1467", "1430", "1404", "1358", "1323"],
+            "1-2": ["1956", "1933", "1856", "1801", "1769", "1730", "1705", "1656", "1620", "1622", "1570", "1503", "1481", "1448", "1435", "1381", "1363", "1356"],
+            "2-1": ["1972", "1954", "1918", "1834", "1819", "1772", "1728", "1707", "1671", "1667", "1628", "1610", "1560", "1496", "1449", "1425", "1391"],
+            "2-2": ["1970", "1952", "1914", "1838", "1814", "1776", "1725", "1715", "1711", "1663", "1627", "1605", "1565", "1501", "1476", "1447", "1437"],
+            "3-1": ["1968","1943","1928","1842","1846","1828","1784","1789","1722","1686","1697","1645","1655","1626","1639","1590","1550","1491","1454"],
+            "3-2": ["1965", "1946", "1922", "1847", "1850", "1823", "1827", "1780", "1788", "1719", "1696", "1690", "1682", "1649", "1654", "1625", "1638", "1595", "1555", "1502","1965"],
+            "4-1": ["1974", "1949", "1866", "1869", "1858", "1861", "1795", "1762", "1758", "1717", "1695", "1678", "1653", "1644", "1640", "1624", "1585", "1545"],
+            "4-2": ["1961", "1962", "1939", "1862", "1865", "1808", "1812", "1794", "1790", "1716", "1698", "1691", "1673", "1677", "1672", "1623", "1600", "1580"]
         }
 
         #To be implemented after implementing redis server
@@ -43,7 +44,10 @@ class ResultScraper:
 
         # Make the HTTP POST request and print the response text
         async with session.get(self.url+payloaddata) as response:
-            return await response.text()
+            responseText = await response.text()
+            if "156FU" in responseText:
+                print(exam_code)
+            return responseText
 
     def scrape_results(self, semester_code, response):
         
@@ -94,6 +98,7 @@ class ResultScraper:
                 "subject_credits"
             ] = subject_credits
 
+
     def total_grade_calculator(self, code, value):
         total = 0
         credits = 0
@@ -127,7 +132,7 @@ class ResultScraper:
             for exam_code in exam_codes.keys():
                 # Create a task for each exam code
                 tasks[exam_code] = []
-
+                exam_codes[exam_code].reverse()
                 for code in exam_codes[exam_code]:
                     for payload in self.payloads:
                         task = asyncio.ensure_future(self.fetch_result(session, code, payload))
