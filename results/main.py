@@ -18,18 +18,18 @@ app.add_middleware(
 
 HTML_PATH = Path(__file__).resolve().parent.parent / "result.html"
 
-@app.get("/", response_class=FileResponse)
+@app.get("/", response_class=HTMLResponse)
 def root():
     """Serve the interactive academic result HTML page."""
     if HTML_PATH.exists():
-        return FileResponse(HTML_PATH)
-    return {"message": "Go to /docs for API documentation or place result.html in the root directory."}
+        return HTMLResponse(content=HTML_PATH.read_text(encoding="utf-8"))
+    return HTMLResponse(content="<h1>JNTU Results API</h1><p>Visit <a href='/docs'>/docs</a> for API documentation.</p>")
 
-@app.get("/result", response_class=FileResponse)
+@app.get("/result", response_class=HTMLResponse)
 def view_result():
     """Direct route for viewing results memo HTML."""
     if HTML_PATH.exists():
-        return FileResponse(HTML_PATH)
+        return HTMLResponse(content=HTML_PATH.read_text(encoding="utf-8"))
     raise HTTPException(status_code=404, detail="result.html not found")
 
 @app.get('/api/{university}/academicresult')
