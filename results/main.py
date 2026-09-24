@@ -1,11 +1,36 @@
+import os
+from pathlib import Path
 from fastapi import FastAPI, Query, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, HTMLResponse
 from jntuh.Executables.jntuhresultscraper import ResultScraper
 
-app = FastAPI()
+app = FastAPI(title="JNTU Results API", version="1.0.0")
 
-@app.get("/")
+# Enable CORS for cross-origin requests from frontend apps or local static files
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+HTML_PATH = Path(__file__).resolve().parent.parent / "result.html"
+
+@app.get("/", response_class=FileResponse)
 def root():
-    return {"message": "Go to http://localhost:8000/docs"}
+    """Serve the interactive academic result HTML page."""
+    if HTML_PATH.exists():
+        return FileResponse(HTML_PATH)
+    return {"message": "Go to /docs for API documentation or place result.html in the root directory."}
+
+@app.get("/result", response_class=FileResponse)
+def view_result():
+    """Direct route for viewing results memo HTML."""
+    if HTML_PATH.exists():
+        return FileResponse(HTML_PATH)
+    raise HTTPException(status_code=404, detail="result.html not found")
 
 @app.get('/api/{university}/academicresult')
 def academicResult(university: str, htno: str = Query(...)):
@@ -37,4 +62,5 @@ def academicResult(university: str, htno: str = Query(...)):
         except Exception as e:
             # Catch any exceptions raised during scraping
             raise HTTPException(status_code=500, detail=str(e))
+
 
